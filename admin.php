@@ -7,8 +7,8 @@ if (isset($_GET['fulfill_id'])) {
   pg_query($conn, "UPDATE orders SET status='Fulfilled' WHERE id=$orderId");
 }
 
-// Fetch all orders
-$result = pg_query($conn, "SELECT * FROM orders ORDER BY order_date DESC");
+// Fetch all orders (latest first)
+$result = pg_query($conn, "SELECT * FROM orders ORDER BY id ASC");
 ?>
 
 <!DOCTYPE html>
@@ -21,9 +21,9 @@ $result = pg_query($conn, "SELECT * FROM orders ORDER BY order_date DESC");
 <body>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg bg-dark">
+<nav class="navbar navbar-expand-lg" style="background-color:#0C3B2E;">
   <div class="container">
-    <a class="navbar-brand text-white" href="index.html">Duskamz Farm Admin</a>
+    <a class="navbar-brand fw-bold" href="index.html" style="font-size:1.8em; color:#FFD700;">Duskamz Farm Admin</a>
   </div>
 </nav>
 
@@ -32,35 +32,43 @@ $result = pg_query($conn, "SELECT * FROM orders ORDER BY order_date DESC");
   <div class="container">
     <h2 class="text-center mb-4">Customer Orders</h2>
     <table class="table table-bordered table-striped">
-      <thead class="table-dark">
+      <thead style="background-color:#0C3B2E; color:#F7E7CE;">
         <tr>
-          <th>ID</th>
+          <th>#</th> <!-- Display counter -->
           <th>Customer Name</th>
           <th>Phone</th>
           <th>Address</th>
           <th>Product</th>
           <th>Quantity</th>
           <th>Order Date</th>
+          <th>Status</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
         <?php
         if ($result) {
+          $counter = 1; // start numbering at 1
           while ($row = pg_fetch_assoc($result)) {
             echo "
             <tr>
-              <td>{$row['id']}</td>
+              <td>{$counter}</td>
               <td>{$row['customer_name']}</td>
               <td>{$row['phone']}</td>
               <td>{$row['address']}</td>
               <td>{$row['product']}</td>
               <td>{$row['quantity']}</td>
               <td>{$row['order_date']}</td>
+              <td>{$row['status']}</td>
+              <td>
+                <a href='admin_dashboard.php?fulfill_id={$row['id']}' class='btn btn-success btn-sm'>Fulfill</a>
+              </td>
             </tr>
             ";
+            $counter++;
           }
         } else {
-          echo "<tr><td colspan='7'>No orders found.</td></tr>";
+          echo "<tr><td colspan='9'>No orders found.</td></tr>";
         }
         ?>
       </tbody>
