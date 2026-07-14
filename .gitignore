@@ -1,0 +1,18 @@
+# PHP dependencies
+/vendor/
+composer.lock
+
+# Environment variables
+.env
+
+# Logs and cache
+*.log
+storage/
+cache/
+
+# Database dumps
+*.sql
+
+# OS-specific files
+.DS_Store
+Thumbs.db
