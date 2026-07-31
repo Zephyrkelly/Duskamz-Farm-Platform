@@ -2,8 +2,6 @@
 session_start();
 include("db_connect.php");
 
-// Fetch products from database
-$result = pg_query($conn, "SELECT name, image, price, description FROM products ORDER BY id DESC");
 ?>
 <!DOCTYPE html>
 <html lang="en">
