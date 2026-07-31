@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $quantity = intval($_POST['quantity']);
 
   if (!empty($name) && !empty($phone) && !empty($address) && !empty($product) && $quantity > 0) {
-    $query = "INSERT INTO order (customer_name, phone, address, product, quantity, status) 
+    $query = "INSERT INTO orders (customer_name, phone, address, product, quantity, status) 
               VALUES ($1, $2, $3, $4, $5, $6)";
     $result = pg_query_params($conn, $query, [$name, $phone, $address, $product, $quantity, 'Pending']);
 
