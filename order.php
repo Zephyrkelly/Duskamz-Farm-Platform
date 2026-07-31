@@ -8,17 +8,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $product = trim($_POST['product']);
   $quantity = intval($_POST['quantity']);
 
-  // Basic validation
   if (!empty($name) && !empty($phone) && !empty($address) && !empty($product) && $quantity > 0) {
     $query = "INSERT INTO orders (customer_name, phone, address, product, quantity, status) 
-              VALUES ('$name', '$phone', '$address', '$product', $quantity, 'Pending')";
-    $result = pg_query($conn, $query);
+              VALUES ($1, $2, $3, $4, $5, $6)";
+    $result = pg_query_params($conn, $query, array($name, $phone, $address, $product, $quantity, 'Pending'));
 
     if ($result) {
-      header("Location: confirmation.php"); // redirect to confirmation page
+      header("Location: confirmation.php");
       exit;
     } else {
-      echo "<script>alert('Error placing order.');</script>";
+      echo "<script>alert('Error placing order: " . pg_last_error($conn) . "');</script>";
     }
   } else {
     echo "<script>alert('Please fill in all fields correctly.');</script>";
