@@ -1,6 +1,4 @@
 <?php
-// Call env.php to load environment variables
-require_once __DIR__ . '/env.php';
 
 // Now you can safely use $_ENV values
 $host = $_ENV['DB_HOST'];
