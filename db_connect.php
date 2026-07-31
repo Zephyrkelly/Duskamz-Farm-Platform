@@ -1,39 +1,19 @@
 <?php
-echo "Host: " . getenv('PGHOST') . PHP_EOL;
-echo "Port: " . getenv('PGPORT') . PHP_EOL;
-echo "Database: " . getenv('PGDATABASE') . PHP_EOL;
-echo "User: " . getenv('PGUSER') . PHP_EOL;
-echo "Password: " . getenv('PGPASSWORD') . PHP_EOL;
+// Call env.php to load environment variables
+require_once __DIR__ . '/env.php';
 
+// Now you can safely use $_ENV values
+$host = $_ENV['DB_HOST'];
+$port = $_ENV['DB_PORT'];
+$dbname = $_ENV['DB_NAME'];
+$user = $_ENV['DB_USER'];
+$password = $_ENV['DB_PASS'];
 
+$conn = pg_connect("host=dpg-d9b956ernols739ni3rg-a.oregon-postgres.render.com port=5432 dbname=duskamz_db user=duskamz_db_user password=g7CmJ7vuvJZTlArcnwkJtV4qNZ6xIXTX sslmode=require");
 
-// Load .env locally (Render injects variables automatically)
-if (file_exists(__DIR__ . '/env.php')) {
-    include __DIR__ . '/env.php';
-}
-
-// Prefer Render PG* variables if available, otherwise use local DB_* variables
-$host = getenv('PGHOST') ?: getenv('DB_HOST');
-$port = getenv('PGPORT') ?: getenv('DB_PORT');
-$dbname = getenv('PGDATABASE') ?: getenv('DB_NAME');
-$user = getenv('PGUSER') ?: getenv('DB_USER');
-$password = getenv('PGPASSWORD') ?: getenv('DB_PASS');
-
-// Build connection string
-$conn_string = "host=$host port=$port dbname=$dbname user=$user password=$password sslmode=require";
-echo "Connection string: $conn_string\n";
-$conn = pg_connect($conn_string);
-
-if (!$conn) {
-    die("❌ Connection failed: " . pg_last_error());
-}
-
-// Optional test query
-$result = pg_query($conn, "SELECT NOW()");
-if ($result) {
-    $row = pg_fetch_row($result);
-    echo "✅ Connected successfully! Server time: " . $row[0];
+if ($conn) {
+   // echo "Connected successfully!";
 } else {
-    echo "⚠️ Connected but query failed.";
+    echo "Connection failed.";
 }
 ?>
