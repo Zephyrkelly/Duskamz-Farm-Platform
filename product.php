@@ -21,7 +21,7 @@ include("db_connect.php");
     <nav>
       <a href="homepage.php" style="color:#F7E7CE; margin-left:20px; text-decoration:none;">Home</a>
       <a href="about.php" style="color:#F7E7CE; margin-left:20px; text-decoration:none;">About</a>
-      <a href="products.php" style="color:#F7E7CE; margin-left:20px; text-decoration:none;">Products</a>
+      <a href="product.php" style="color:#F7E7CE; margin-left:20px; text-decoration:none;">Products</a>
       <a href="order.php" style="color:#F7E7CE; margin-left:20px; text-decoration:none;">Order</a>
       <a href="contact.php" style="color:#F7E7CE; margin-left:20px; text-decoration:none;">Contact</a>
       <a href="login.php" style="color:#F7E7CE; margin-left:20px; text-decoration:none;">Login</a>
