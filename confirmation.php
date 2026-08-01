@@ -19,7 +19,7 @@
   <div class="container text-center">
     <h2 class="text-success mb-4">🎉 Thank You!</h2>
     <p class="lead">Your order has been placed successfully. Our team will contact you soon to confirm delivery.</p>
-    <a href="products.php" class="btn btn-primary mt-3">Back to Products</a>
+    <a href="product.php" class="btn btn-primary mt-3">Back to Products</a>
   </div>
 </section>
 
