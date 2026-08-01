@@ -8,97 +8,107 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
-// Handle status update
+// Handle status update securely
 if (isset($_GET['fulfill_id'])) {
     $orderId = intval($_GET['fulfill_id']);
-    pg_query($conn, "UPDATE orders SET status='Fulfilled' WHERE id=$orderId");
+    pg_query_params($conn, "UPDATE orders SET status=$1 WHERE id=$2", array('Fulfilled', $orderId));
 }
 
-// Handle new order form submission
+// Handle new order form submission securely
 if (isset($_POST['add_order'])) {
-    $customer_name = $_POST['customer_name'];
-    $phone = $_POST['phone'];
-    $address = $_POST['address'];
-    $product = $_POST['product'];
-    $quantity = $_POST['quantity'];
-
     $query = "INSERT INTO orders (customer_name, phone, address, product, quantity, status)
-              VALUES ('$customer_name', '$phone', '$address', '$product', '$quantity', 'Pending')";
-    pg_query($conn, $query);
+              VALUES ($1, $2, $3, $4, $5, $6)";
+    pg_query_params($conn, $query, array(
+        $_POST['customer_name'],
+        $_POST['phone'],
+        $_POST['address'],
+        $_POST['product'],
+        $_POST['quantity'],
+        'Pending'
+    ));
 }
 
 // Fetch all orders
-$result = pg_query($conn, "SELECT * FROM orders");
-if (!$result) {
-    die("Query failed: " . pg_last_error($conn));
-}
+$result = pg_query($conn, "SELECT * FROM orders ORDER BY id DESC");
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Duskamz Farm Admin</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="header">Admin Dashboard</div>
-    <div class="container-flex">
+<body style="background-color:#C8E3D4; font-family:'Poppins',sans-serif;">
+    <div class="container my-5">
+        <h1 class="text-center mb-4" style="color:#0C3B2E;">Admin Dashboard</h1>
+
         <!-- Orders Table -->
-        <div class="box">
-            <h2>Customer Orders</h2>
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Customer Name</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-                <?php
-                if ($result && pg_num_rows($result) > 0) {
-                    while ($row = pg_fetch_assoc($result)) {
-                        echo "<tr>
-                                <td>{$row['id']}</td>
-                                <td>{$row['customer_name']}</td>
-                                <td>{$row['phone']}</td>
-                                <td>{$row['address']}</td>
-                                <td>{$row['product']}</td>
-                                <td>{$row['quantity']}</td>
-                                <td>{$row['status']}</td>
-                                <td><a class='btn' href='admin.php?fulfill_id={$row['id']}'>Fulfill</a></td>
-                              </tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='8'>No orders found.</td></tr>";
-                }
-                ?>
-            </table>
+        <div class="card shadow mb-4">
+            <div class="card-header bg-dark text-light">Customer Orders</div>
+            <div class="card-body">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer Name</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        if ($result && pg_num_rows($result) > 0) {
+                            while ($row = pg_fetch_assoc($result)) {
+                                $badge = $row['status'] === 'Fulfilled' ? 'bg-success' : 'bg-warning';
+                                echo "<tr>
+                                        <td>{$row['id']}</td>
+                                        <td>{$row['customer_name']}</td>
+                                        <td>{$row['phone']}</td>
+                                        <td>{$row['address']}</td>
+                                        <td>{$row['product']}</td>
+                                        <td>{$row['quantity']}</td>
+                                        <td><span class='badge $badge'>{$row['status']}</span></td>
+                                        <td><a class='btn btn-sm btn-primary' href='admin.php?fulfill_id={$row['id']}'>Fulfill</a></td>
+                                      </tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='8' class='text-center'>No orders found.</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Add Order Form -->
-        <div class="box">
-            <h2>Add New Order</h2>
-            <div class="form-box">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-light">Add New Order</div>
+            <div class="card-body">
                 <form method="POST" action="admin.php">
-                    <label>Customer Name:</label>
-                    <input type="text" name="customer_name" required>
-
-                    <label>Phone:</label>
-                    <input type="text" name="phone" required>
-
-                    <label>Address:</label>
-                    <input type="text" name="address" required>
-
-                    <label>Product:</label>
-                    <input type="text" name="product" required>
-
-                    <label>Quantity:</label>
-                    <input type="number" name="quantity" required>
-
-                    <button type="submit" name="add_order">Add Order</button>
+                    <div class="mb-3">
+                        <label class="form-label">Customer Name:</label>
+                        <input type="text" name="customer_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone:</label>
+                        <input type="text" name="phone" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address:</label>
+                        <input type="text" name="address" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Product:</label>
+                        <input type="text" name="product" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity:</label>
+                        <input type="number" name="quantity" class="form-control" required>
+                    </div>
+                    <button type="submit" name="add_order" class="btn btn-success w-100">Add Order</button>
                 </form>
             </div>
         </div>
