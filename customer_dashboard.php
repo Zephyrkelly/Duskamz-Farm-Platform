@@ -1,81 +1,98 @@
 <?php
 session_start();
-include 'db_connect.php';
 
-// Redirect if not logged in
-if (!isset($_SESSION['user_id'])) {
+// Protect the page: only logged-in customers can access
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'customer') {
     header("Location: login.php");
     exit;
 }
 
-// Redirect if admin (admins should use dashboard.php)
-if ($_SESSION['role'] === 'admin') {
-    header("Location: dashboard.php");
-    exit;
-}
+include 'db_connect.php';
 
-$user_id = $_SESSION['user_id'];
-
-// Fetch only this customer's orders
-$query = "SELECT order_id, product_name, status, created_at 
-          FROM orders 
-          WHERE customer_id = $user_id";
-$result = pg_query($conn, $query);
+// Fetch customer orders
+$query = "SELECT id, product, quantity, status, address FROM orders WHERE customer_name = $1 ORDER BY id DESC";
+$result = pg_query_params($conn, $query, array($_SESSION['user_id']));
 ?>
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Orders</title>
-    <style>
-        body {
-            background-color: #C1E1C1; /* pastel green */
-            font-family: Arial, sans-serif;
-        }
-        .header {
-            background-color: #228B22; /* forest green */
-            color: white;
-            text-align: center;
-            padding: 20px;
-            font-size: 24px;
-        }
-        table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-        th, td {
-            padding: 12px;
-            border: 1px solid #ccc;
-            text-align: center;
-        }
-        th {
-            background-color: #228B22;
-            color: white;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Customer Dashboard - Duskamz Farm</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <div class="header">My Orders</div>
-    <table>
-        <tr>
-            <th>Order ID</th>
+<body style="background-color:#C8E3D4; font-family:'Poppins',sans-serif;">
+
+  <!-- Navbar -->
+   <nav class="navbar navbar-expand-lg" style="background-color:#0C3B2E;">
+  <div class="container">
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold" 
+       href="#" 
+       style="font-size:1.8em; color:#228B22;"> <!-- Gold -->
+       Duskamz Farm
+    </a>
+    <!-- If you prefer forest green instead of gold, use: color:#228B22; -->
+
+    <!-- Nav links -->
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="product.php" style="color:#228B22;">Products</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="order.php" style="color:#228B22;">Place Order</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="logout.php" style="color:#228B22;">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+  <!-- Dashboard Content -->
+  <div class="container py-5">
+    <h2 class="text-center mb-4" style="color:#0C3B2E; font-weight:bold;">Welcome to Your Dashboard</h2>
+
+    <div class="card shadow-lg p-4" style="background-color:#F7E7CE; border-radius:12px;">
+      <h4 style="color:#0C3B2E; font-weight:bold;">Your Orders</h4>
+      <table class="table table-bordered table-striped mt-3">
+        <thead style="background-color:#6D9773; color:#fff;">
+          <tr>
+            <th>Order ID</th>
             <th>Product</th>
+            <th>Quantity</th>
             <th>Status</th>
-            <th>Date</th>
-        </tr>
-        <?php
-        while ($row = pg_fetch_assoc($result)) {
-            echo "<tr>
-                    <td>{$row['order_id']}</td>
-                    <td>{$row['product_name']}</td>
-                    <td>{$row['status']}</td>
-                    <td>{$row['created_at']}</td>
-                  </tr>";
-        }
-        ?>
-    </table>
+            <th>Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php
+          if ($result && pg_num_rows($result) > 0) {
+            while ($row = pg_fetch_assoc($result)) {
+              echo "<tr>
+                      <td>{$row['id']}</td>
+                      <td>{$row['product']}</td>
+                      <td>{$row['quantity']}</td>
+                      <td>{$row['status']}</td>
+                      <td>{$row['address']}</td>
+                    </tr>";
+            }
+          } else {
+            echo "<tr><td colspan='5' class='text-center'>No orders found.</td></tr>";
+          }
+          ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center py-3" style="background-color:#0C3B2E; color:#F7E7CE; font-size:0.9em;">
+    <p>&copy; 2026 Duskamz Farm — All rights reserved.</p>
+  </footer>
+
 </body>
 </html>
