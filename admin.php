@@ -14,6 +14,12 @@ if (isset($_GET['fulfill_id'])) {
     pg_query_params($conn, "UPDATE orders SET status=$1 WHERE id=$2", array('Fulfilled', $orderId));
 }
 
+// Handle delete order securely
+if (isset($_GET['delete_id'])) {
+    $orderId = intval($_GET['delete_id']);
+    pg_query_params($conn, "DELETE FROM orders WHERE id=$1", array($orderId));
+}
+
 // Handle new order form submission securely
 if (isset($_POST['add_order'])) {
     $query = "INSERT INTO orders (customer_name, phone, address, product, quantity, status)
@@ -71,7 +77,11 @@ $result = pg_query($conn, "SELECT * FROM orders ORDER BY id DESC");
                                         <td>{$row['product']}</td>
                                         <td>{$row['quantity']}</td>
                                         <td><span class='badge $badge'>{$row['status']}</span></td>
-                                        <td><a class='btn btn-sm btn-primary' href='admin.php?fulfill_id={$row['id']}'>Fulfill</a></td>
+                                        <td>
+                                            <a class='btn btn-sm btn-primary me-2' href='admin.php?fulfill_id={$row['id']}'>Fulfill</a>
+                                            <a class='btn btn-sm btn-danger' href='admin.php?delete_id={$row['id']}' 
+                                               onclick=\"return confirm('Are you sure you want to delete this order?');\">Delete</a>
+                                        </td>
                                       </tr>";
                             }
                         } else {
